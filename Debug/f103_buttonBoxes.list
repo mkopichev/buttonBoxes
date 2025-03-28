@@ -37,13 +37,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0000fc6c  00000000  00000000  000110c0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000069a  00000000  00000000  00020d2c  2**0
+ 17 .debug_line   00000699  00000000  00000000  00020d2c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00052f4b  00000000  00000000  000213c6  2**0
+ 18 .debug_str    00052f4b  00000000  00000000  000213c5  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  00074311  2**0
+ 19 .comment      00000050  00000000  00000000  00074310  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  0000012c  00000000  00000000  00074364  2**2
+ 20 .debug_frame  0000012c  00000000  00000000  00074360  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -289,84 +289,85 @@ int main(void) {
  80002ce:	4b25      	ldr	r3, [pc, #148]	; (8000364 <main+0x1bc>)
  80002d0:	f44f 52fa 	mov.w	r2, #8000	; 0x1f40
  80002d4:	629a      	str	r2, [r3, #40]	; 0x28
-	TIM3->ARR = 2000; // timer period is ARR ms
+	TIM3->ARR = 200; // timer period is ARR ms
  80002d6:	4b23      	ldr	r3, [pc, #140]	; (8000364 <main+0x1bc>)
- 80002d8:	f44f 62fa 	mov.w	r2, #2000	; 0x7d0
- 80002dc:	62da      	str	r2, [r3, #44]	; 0x2c
+ 80002d8:	22c8      	movs	r2, #200	; 0xc8
+ 80002da:	62da      	str	r2, [r3, #44]	; 0x2c
 	NVIC_EnableIRQ(TIM3_IRQn);
- 80002de:	201d      	movs	r0, #29
- 80002e0:	f7ff ff46 	bl	8000170 <__NVIC_EnableIRQ>
+ 80002dc:	201d      	movs	r0, #29
+ 80002de:	f7ff ff47 	bl	8000170 <__NVIC_EnableIRQ>
 
 	for (uint8_t i = 0; i < 3; i++) {
- 80002e4:	2300      	movs	r3, #0
- 80002e6:	71fb      	strb	r3, [r7, #7]
- 80002e8:	e025      	b.n	8000336 <main+0x18e>
+ 80002e2:	2300      	movs	r3, #0
+ 80002e4:	71fb      	strb	r3, [r7, #7]
+ 80002e6:	e025      	b.n	8000334 <main+0x18c>
 
 		switch (i) {
- 80002ea:	79fb      	ldrb	r3, [r7, #7]
- 80002ec:	2b02      	cmp	r3, #2
- 80002ee:	d014      	beq.n	800031a <main+0x172>
- 80002f0:	2b02      	cmp	r3, #2
- 80002f2:	dc19      	bgt.n	8000328 <main+0x180>
- 80002f4:	2b00      	cmp	r3, #0
- 80002f6:	d002      	beq.n	80002fe <main+0x156>
- 80002f8:	2b01      	cmp	r3, #1
- 80002fa:	d007      	beq.n	800030c <main+0x164>
- 80002fc:	e014      	b.n	8000328 <main+0x180>
+ 80002e8:	79fb      	ldrb	r3, [r7, #7]
+ 80002ea:	2b02      	cmp	r3, #2
+ 80002ec:	d014      	beq.n	8000318 <main+0x170>
+ 80002ee:	2b02      	cmp	r3, #2
+ 80002f0:	dc19      	bgt.n	8000326 <main+0x17e>
+ 80002f2:	2b00      	cmp	r3, #0
+ 80002f4:	d002      	beq.n	80002fc <main+0x154>
+ 80002f6:	2b01      	cmp	r3, #1
+ 80002f8:	d007      	beq.n	800030a <main+0x162>
+ 80002fa:	e014      	b.n	8000326 <main+0x17e>
 
 		case 0:
 			GPIOB->BSRR |= (1 << GPIO_BSRR_BS13_Pos);
- 80002fe:	4b16      	ldr	r3, [pc, #88]	; (8000358 <main+0x1b0>)
- 8000300:	691b      	ldr	r3, [r3, #16]
- 8000302:	4a15      	ldr	r2, [pc, #84]	; (8000358 <main+0x1b0>)
- 8000304:	f443 5300 	orr.w	r3, r3, #8192	; 0x2000
- 8000308:	6113      	str	r3, [r2, #16]
+ 80002fc:	4b16      	ldr	r3, [pc, #88]	; (8000358 <main+0x1b0>)
+ 80002fe:	691b      	ldr	r3, [r3, #16]
+ 8000300:	4a15      	ldr	r2, [pc, #84]	; (8000358 <main+0x1b0>)
+ 8000302:	f443 5300 	orr.w	r3, r3, #8192	; 0x2000
+ 8000306:	6113      	str	r3, [r2, #16]
 			break;
- 800030a:	e00d      	b.n	8000328 <main+0x180>
+ 8000308:	e00d      	b.n	8000326 <main+0x17e>
 		case 1:
 			GPIOB->BSRR |= (1 << GPIO_BSRR_BS14_Pos);
- 800030c:	4b12      	ldr	r3, [pc, #72]	; (8000358 <main+0x1b0>)
- 800030e:	691b      	ldr	r3, [r3, #16]
- 8000310:	4a11      	ldr	r2, [pc, #68]	; (8000358 <main+0x1b0>)
- 8000312:	f443 4380 	orr.w	r3, r3, #16384	; 0x4000
- 8000316:	6113      	str	r3, [r2, #16]
+ 800030a:	4b13      	ldr	r3, [pc, #76]	; (8000358 <main+0x1b0>)
+ 800030c:	691b      	ldr	r3, [r3, #16]
+ 800030e:	4a12      	ldr	r2, [pc, #72]	; (8000358 <main+0x1b0>)
+ 8000310:	f443 4380 	orr.w	r3, r3, #16384	; 0x4000
+ 8000314:	6113      	str	r3, [r2, #16]
 			break;
- 8000318:	e006      	b.n	8000328 <main+0x180>
+ 8000316:	e006      	b.n	8000326 <main+0x17e>
 		case 2:
 			GPIOB->BSRR |= (1 << GPIO_BSRR_BS15_Pos);
- 800031a:	4b0f      	ldr	r3, [pc, #60]	; (8000358 <main+0x1b0>)
- 800031c:	691b      	ldr	r3, [r3, #16]
- 800031e:	4a0e      	ldr	r2, [pc, #56]	; (8000358 <main+0x1b0>)
- 8000320:	f443 4300 	orr.w	r3, r3, #32768	; 0x8000
- 8000324:	6113      	str	r3, [r2, #16]
+ 8000318:	4b0f      	ldr	r3, [pc, #60]	; (8000358 <main+0x1b0>)
+ 800031a:	691b      	ldr	r3, [r3, #16]
+ 800031c:	4a0e      	ldr	r2, [pc, #56]	; (8000358 <main+0x1b0>)
+ 800031e:	f443 4300 	orr.w	r3, r3, #32768	; 0x8000
+ 8000322:	6113      	str	r3, [r2, #16]
 			break;
- 8000326:	bf00      	nop
+ 8000324:	bf00      	nop
 		}
 		delayMs(500);
- 8000328:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 800032c:	f000 f8e6 	bl	80004fc <delayMs>
+ 8000326:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 800032a:	f000 f8e7 	bl	80004fc <delayMs>
 	for (uint8_t i = 0; i < 3; i++) {
- 8000330:	79fb      	ldrb	r3, [r7, #7]
- 8000332:	3301      	adds	r3, #1
- 8000334:	71fb      	strb	r3, [r7, #7]
- 8000336:	79fb      	ldrb	r3, [r7, #7]
- 8000338:	2b02      	cmp	r3, #2
- 800033a:	d9d6      	bls.n	80002ea <main+0x142>
+ 800032e:	79fb      	ldrb	r3, [r7, #7]
+ 8000330:	3301      	adds	r3, #1
+ 8000332:	71fb      	strb	r3, [r7, #7]
+ 8000334:	79fb      	ldrb	r3, [r7, #7]
+ 8000336:	2b02      	cmp	r3, #2
+ 8000338:	d9d6      	bls.n	80002e8 <main+0x140>
 	}
 
 	GPIOB->BSRR |= (1 << GPIO_BSRR_BR13_Pos) | (1 << GPIO_BSRR_BR14_Pos)
- 800033c:	4b06      	ldr	r3, [pc, #24]	; (8000358 <main+0x1b0>)
- 800033e:	691b      	ldr	r3, [r3, #16]
- 8000340:	4a05      	ldr	r2, [pc, #20]	; (8000358 <main+0x1b0>)
- 8000342:	f043 4360 	orr.w	r3, r3, #3758096384	; 0xe0000000
- 8000346:	6113      	str	r3, [r2, #16]
+ 800033a:	4b07      	ldr	r3, [pc, #28]	; (8000358 <main+0x1b0>)
+ 800033c:	691b      	ldr	r3, [r3, #16]
+ 800033e:	4a06      	ldr	r2, [pc, #24]	; (8000358 <main+0x1b0>)
+ 8000340:	f043 4360 	orr.w	r3, r3, #3758096384	; 0xe0000000
+ 8000344:	6113      	str	r3, [r2, #16]
 			| (1 << GPIO_BSRR_BR15_Pos);
 
 	for (;;) {
 
 		__NOP();
- 8000348:	bf00      	nop
- 800034a:	e7fd      	b.n	8000348 <main+0x1a0>
+ 8000346:	bf00      	nop
+ 8000348:	e7fd      	b.n	8000346 <main+0x19e>
+ 800034a:	bf00      	nop
  800034c:	40021000 	.word	0x40021000
  8000350:	e000e010 	.word	0xe000e010
  8000354:	40011000 	.word	0x40011000
@@ -454,7 +455,7 @@ void EXTI9_5_IRQHandler(void) {
 
 080003e4 <TIM2_IRQHandler>:
 
-void TIM2_IRQHandler(void) {
+void TIM2_IRQHandler(void) { // debouncing
  80003e4:	b480      	push	{r7}
  80003e6:	af00      	add	r7, sp, #0
 
