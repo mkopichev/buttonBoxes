@@ -20,7 +20,8 @@
 #include <stdbool.h>
 #include "stm32f103x6.h"
 
-static uint16_t systick_counter = 0;
+static uint16_t systickCounter = 0; // for systick timer
+static uint8_t whichButtonPressed = 0; // for understanding which button was pressed
 
 void delayMs(uint16_t millisec);
 
@@ -78,8 +79,28 @@ int main(void) {
 	TIM3->CR1 |= (1 << TIM_CR1_URS_Pos);
 	TIM3->DIER |= (1 << TIM_DIER_UIE_Pos);
 	TIM3->PSC = 8000; // timer frequency is 1 kHz
-	TIM3->ARR = 5000; // timer period is ARR ms
+	TIM3->ARR = 2000; // timer period is ARR ms
 	NVIC_EnableIRQ(TIM3_IRQn);
+
+	for (uint8_t i = 0; i < 3; i++) {
+
+		switch (i) {
+
+		case 0:
+			GPIOB->BSRR |= (1 << GPIO_BSRR_BS13_Pos);
+			break;
+		case 1:
+			GPIOB->BSRR |= (1 << GPIO_BSRR_BS14_Pos);
+			break;
+		case 2:
+			GPIOB->BSRR |= (1 << GPIO_BSRR_BS15_Pos);
+			break;
+		}
+		delayMs(500);
+	}
+
+	GPIOB->BSRR |= (1 << GPIO_BSRR_BR13_Pos) | (1 << GPIO_BSRR_BR14_Pos)
+			| (1 << GPIO_BSRR_BR15_Pos);
 
 	for (;;) {
 
@@ -89,75 +110,66 @@ int main(void) {
 
 void EXTI9_5_IRQHandler(void) {
 
-	if (EXTI->PR & (1 << EXTI_PR_PR7_Pos)) { // button pressed
+	EXTI->IMR &= ~((1 << EXTI_IMR_MR7_Pos) | (1 << EXTI_IMR_MR6_Pos)
+			| (1 << EXTI_IMR_MR5_Pos)); // disable all buttons interrupts
+	if (EXTI->PR & (1 << EXTI_PR_PR7_Pos)) { // find button that is pressed
 
 		EXTI->PR = (1 << EXTI_PR_PR7_Pos); // clear external interrupt pending
-		EXTI->IMR &= ~(1 << EXTI_IMR_MR7_Pos); // disable button interrupt
-		TIM2->CR1 |= (1 << TIM_CR1_CEN_Pos); // start timer
-		return;
-	}
-	if (EXTI->PR & (1 << EXTI_PR_PR6_Pos)) {
+		whichButtonPressed = 1;
+	} else if (EXTI->PR & (1 << EXTI_PR_PR6_Pos)) {
 
 		EXTI->PR = (1 << EXTI_PR_PR6_Pos);
-		EXTI->IMR &= ~(1 << EXTI_IMR_MR6_Pos);
-		TIM2->CR1 |= (1 << TIM_CR1_CEN_Pos);
-		return;
-	}
-	if (EXTI->PR & (1 << EXTI_PR_PR5_Pos)) {
+		whichButtonPressed = 2;
+	} else if (EXTI->PR & (1 << EXTI_PR_PR5_Pos)) {
 
 		EXTI->PR = (1 << EXTI_PR_PR5_Pos);
-		EXTI->IMR &= ~(1 << EXTI_IMR_MR5_Pos);
-		TIM2->CR1 |= (1 << TIM_CR1_CEN_Pos);
-		return;
+		whichButtonPressed = 3;
 	}
+	TIM2->CR1 |= (1 << TIM_CR1_CEN_Pos); // start TIMER2 for debouncing
 }
 
 void TIM2_IRQHandler(void) {
 
+	TIM2->CR1 &= ~(1 << TIM_CR1_CEN_Pos); // stop TIMER2
 	if (TIM2->SR & (1 << TIM_SR_UIF_Pos)) { // timer overflow occured
 
 		TIM2->SR &= ~(1 << TIM_SR_UIF_Pos); // clear timer overflow interrupt flag
-		if (!(GPIOB->IDR & (1 << GPIO_IDR_IDR7_Pos))) { // if button is still pressed after bouncing time
+		if ((whichButtonPressed == 1)
+				&& (!(GPIOB->IDR & (1 << GPIO_IDR_IDR7_Pos)))) { // if button is still pressed after bouncing time
 
 			GPIOB->ODR |= (1 << GPIO_ODR_ODR15_Pos); // light up one of the LEDs
-			TIM2->CR1 &= ~(1 << TIM_CR1_CEN_Pos); // stop TIMER2
-			TIM3->CR1 |= (1 << TIM_CR1_CEN_Pos); // start TIMER3
-			return;
-		}
-		if (!(GPIOB->IDR & (1 << GPIO_IDR_IDR6_Pos))) {
+		} else if ((whichButtonPressed == 2)
+				&& (!(GPIOB->IDR & (1 << GPIO_IDR_IDR6_Pos)))) {
 
 			GPIOB->ODR |= (1 << GPIO_ODR_ODR14_Pos);
-			TIM2->CR1 &= ~(1 << TIM_CR1_CEN_Pos);
-			TIM3->CR1 |= (1 << TIM_CR1_CEN_Pos);
-			return;
-		}
-		if (!(GPIOB->IDR & (1 << GPIO_IDR_IDR5_Pos))) {
+		} else if ((whichButtonPressed == 3)
+				&& (!(GPIOB->IDR & (1 << GPIO_IDR_IDR5_Pos)))) {
 
 			GPIOB->ODR |= (1 << GPIO_ODR_ODR13_Pos);
-			TIM2->CR1 &= ~(1 << TIM_CR1_CEN_Pos);
-			TIM3->CR1 |= (1 << TIM_CR1_CEN_Pos);
-			return;
 		}
+		TIM3->CR1 |= (1 << TIM_CR1_CEN_Pos); // start TIMER3
 	}
 }
 
 void TIM3_IRQHandler(void) {
 
+	TIM3->CR1 &= ~(1 << TIM_CR1_CEN_Pos); // stop TIMER3
 	if (TIM3->SR & (1 << TIM_SR_UIF_Pos)) {
 
 		TIM3->SR &= ~(1 << TIM_SR_UIF_Pos);
-		EXTI->IMR |= (1 << EXTI_IMR_MR7_Pos) | (1 << EXTI_IMR_MR6_Pos)
-				| (1 << EXTI_IMR_MR5_Pos); // enable all buttons interrupts
 		GPIOB->ODR &= ~((1 << GPIO_ODR_ODR15_Pos) | (1 << GPIO_ODR_ODR14_Pos)
 				| (1 << GPIO_ODR_ODR13_Pos)); // turn off all LEDs
+		EXTI->IMR |= (1 << EXTI_IMR_MR7_Pos) | (1 << EXTI_IMR_MR6_Pos)
+				| (1 << EXTI_IMR_MR5_Pos); // enable all buttons interrupts
+		whichButtonPressed = 0;
 	}
 }
 
 void delayMs(uint16_t millisec) {
 
-	systick_counter = 0;
+	systickCounter = 0;
 
-	while (systick_counter < millisec) {
+	while (systickCounter < millisec) {
 
 		__NOP();
 	}
@@ -165,9 +177,9 @@ void delayMs(uint16_t millisec) {
 
 void SysTick_Handler(void) {
 
-	if (systick_counter++ > 1000) {
+	if (systickCounter++ > 1000) {
 
-		systick_counter = 0;
+		systickCounter = 0;
 		GPIOC->ODR ^= (1 << GPIO_ODR_ODR13_Pos);
 	}
 }
