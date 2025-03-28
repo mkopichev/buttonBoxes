@@ -79,7 +79,7 @@ int main(void) {
 	TIM3->CR1 |= (1 << TIM_CR1_URS_Pos);
 	TIM3->DIER |= (1 << TIM_DIER_UIE_Pos);
 	TIM3->PSC = 8000; // timer frequency is 1 kHz
-	TIM3->ARR = 200; // timer period is ARR ms
+	TIM3->ARR = 500; // timer period is ARR ms
 	NVIC_EnableIRQ(TIM3_IRQn);
 
 	for (uint8_t i = 0; i < 3; i++) {

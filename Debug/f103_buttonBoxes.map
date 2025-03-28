@@ -602,9 +602,9 @@ LOAD c:/program files (x86)/stm32cubeide/stm32cubeide/plugins/com.st.stm32cube.i
  .debug_macro   0x00000000000010d4      0xd23 ./Src/main.o
  .debug_macro   0x0000000000001df7     0xde75 ./Src/main.o
 
-.debug_line     0x0000000000000000      0x699
- .debug_line    0x0000000000000000      0x615 ./Src/main.o
- .debug_line    0x0000000000000615       0x84 ./Startup/startup_stm32f103c8tx.o
+.debug_line     0x0000000000000000      0x69a
+ .debug_line    0x0000000000000000      0x616 ./Src/main.o
+ .debug_line    0x0000000000000616       0x84 ./Startup/startup_stm32f103c8tx.o
 
 .debug_str      0x0000000000000000    0x52f4b
  .debug_str     0x0000000000000000    0x52f1a ./Src/main.o
