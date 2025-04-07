@@ -78,7 +78,7 @@ int main(void) {
 	TIM2->CR1 |= (1 << TIM_CR1_URS_Pos);
 	TIM2->DIER |= (1 << TIM_DIER_UIE_Pos);
 	TIM2->PSC = 8000; // timer frequency is 1 kHz
-	TIM2->ARR = 20; // timer period is ARR ms
+	TIM2->ARR = 40; // timer period is ARR ms
 	NVIC_EnableIRQ(TIM2_IRQn);
 
 	// TIM3 is for buzzer sound and time delay between pushes

@@ -285,9 +285,9 @@ int main(void) {
  80002c2:	f04f 4380 	mov.w	r3, #1073741824	; 0x40000000
  80002c6:	f44f 52fa 	mov.w	r2, #8000	; 0x1f40
  80002ca:	629a      	str	r2, [r3, #40]	; 0x28
-	TIM2->ARR = 20; // timer period is ARR ms
+	TIM2->ARR = 40; // timer period is ARR ms
  80002cc:	f04f 4380 	mov.w	r3, #1073741824	; 0x40000000
- 80002d0:	2214      	movs	r2, #20
+ 80002d0:	2228      	movs	r2, #40	; 0x28
  80002d2:	62da      	str	r2, [r3, #44]	; 0x2c
 	NVIC_EnableIRQ(TIM2_IRQn);
  80002d4:	201c      	movs	r0, #28
