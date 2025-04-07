@@ -40,9 +40,10 @@ int main(void) {
 			| (1 << SysTick_CTRL_TICKINT_Pos);
 
 	RCC->APB2ENR |= (1 << RCC_APB2ENR_IOPCEN_Pos)
-			| (1 << RCC_APB2ENR_IOPBEN_Pos) | (1 << RCC_APB2ENR_AFIOEN_Pos);
-	RCC->APB1ENR |= (1 << RCC_APB1ENR_TIM2EN_Pos)
-			| (1 << RCC_APB1ENR_TIM3EN_Pos);
+			| (1 << RCC_APB2ENR_IOPBEN_Pos) | (1 << RCC_APB2ENR_IOPAEN_Pos)
+			| (1 << RCC_APB2ENR_AFIOEN_Pos);
+	RCC->APB1ENR |= (1 << RCC_APB1ENR_TIM3EN_Pos)
+			| (1 << RCC_APB1ENR_TIM2EN_Pos);
 
 	// PC13 is a service LED
 	GPIOC->CRH |= (2 << GPIO_CRH_MODE13_Pos); // PC13 output, open-drain, speed 2 MHz max
@@ -68,6 +69,11 @@ int main(void) {
 	GPIOB->CRH &= ~((1 << GPIO_CRH_CNF15_Pos) | (1 << GPIO_CRH_CNF14_Pos)
 			| (1 << GPIO_CRH_CNF13_Pos)); // push-pull
 
+	// buzzer is on PORTA 11 pin
+	GPIOA->CRH &= ~(3 << GPIO_CRH_CNF11_Pos); // push-pull
+	GPIOA->CRH &= ~(3 << GPIO_CRH_MODE11_Pos);
+	GPIOA->CRH |= (2 << GPIO_CRH_MODE11_Pos);
+
 	// TIM2 is for buttons debouncing
 	TIM2->CR1 |= (1 << TIM_CR1_URS_Pos);
 	TIM2->DIER |= (1 << TIM_DIER_UIE_Pos);
@@ -75,13 +81,14 @@ int main(void) {
 	TIM2->ARR = 20; // timer period is ARR ms
 	NVIC_EnableIRQ(TIM2_IRQn);
 
-	// TIM3 is for time delay between buttons pushes
+	// TIM3 is for buzzer sound and time delay between pushes
 	TIM3->CR1 |= (1 << TIM_CR1_URS_Pos);
 	TIM3->DIER |= (1 << TIM_DIER_UIE_Pos);
 	TIM3->PSC = 8000; // timer frequency is 1 kHz
-	TIM3->ARR = 500; // timer period is ARR ms
+	TIM3->ARR = 600; // timer period is ARR ms
 	NVIC_EnableIRQ(TIM3_IRQn);
 
+	GPIOA->ODR |= (1 << GPIO_ODR_ODR11_Pos);
 	for (uint8_t i = 0; i < 3; i++) {
 
 		switch (i) {
@@ -96,8 +103,9 @@ int main(void) {
 			GPIOB->BSRR |= (1 << GPIO_BSRR_BS15_Pos);
 			break;
 		}
-		delayMs(500);
+		delayMs(150);
 	}
+	GPIOA->ODR &= ~(1 << GPIO_ODR_ODR11_Pos);
 
 	GPIOB->BSRR |= (1 << GPIO_BSRR_BR13_Pos) | (1 << GPIO_BSRR_BR14_Pos)
 			| (1 << GPIO_BSRR_BR15_Pos);
@@ -134,8 +142,9 @@ void TIM2_IRQHandler(void) { // debouncing
 	if (TIM2->SR & (1 << TIM_SR_UIF_Pos)) { // timer overflow occured
 
 		TIM2->SR &= ~(1 << TIM_SR_UIF_Pos); // clear timer overflow interrupt flag
+		GPIOA->ODR |= (1 << GPIO_ODR_ODR11_Pos); // start buzzer sound
 		if ((whichButtonPressed == 1)
-				&& (!(GPIOB->IDR & (1 << GPIO_IDR_IDR7_Pos)))) { // if button is still pressed after bouncing time
+				&& (!(GPIOB->IDR & (1 << GPIO_IDR_IDR7_Pos)))) { // if button is still pressed after debouncing time
 
 			GPIOB->ODR |= (1 << GPIO_ODR_ODR15_Pos); // light up one of the LEDs
 		} else if ((whichButtonPressed == 2)
@@ -151,12 +160,13 @@ void TIM2_IRQHandler(void) { // debouncing
 	}
 }
 
-void TIM3_IRQHandler(void) {
+void TIM3_IRQHandler(void) { // buzzer sound and time delay between button pushes
 
 	TIM3->CR1 &= ~(1 << TIM_CR1_CEN_Pos); // stop TIMER3
 	if (TIM3->SR & (1 << TIM_SR_UIF_Pos)) {
 
 		TIM3->SR &= ~(1 << TIM_SR_UIF_Pos);
+		GPIOA->ODR &= ~(1 << GPIO_ODR_ODR11_Pos); // stop buzzer sound
 		GPIOB->ODR &= ~((1 << GPIO_ODR_ODR15_Pos) | (1 << GPIO_ODR_ODR14_Pos)
 				| (1 << GPIO_ODR_ODR13_Pos)); // turn off all LEDs
 		EXTI->IMR |= (1 << EXTI_IMR_MR7_Pos) | (1 << EXTI_IMR_MR6_Pos)
